@@ -2,7 +2,7 @@
     "name": "pitchanon/facebook-connect",
     "description": "A vendor facebook connect package",
     "keywords": ["laravel", "vendor", "facebook"],
-    "homepage": "https://github.com/popphoenix/test",
+    "homepage": "https://github.com/popphoenix/Laravel4-FacebookConnect",
     "type": "library",
     "license": "MIT",
     "authors": [

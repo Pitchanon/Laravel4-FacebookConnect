@@ -4,13 +4,17 @@ Facebook Connect is a useful to create app facebokk and get testing request.
 
 ### Installation
 
-- [API on Packagist](https://packagist.org/packages/)
+- [API on Packagist](https://packagist.org/packages/pitchanon/facebook-connect)
 - [API on GitHub](https://github.com/popphoenix/Laravel4-FacebookConnect)
 
 To get the lastest version of Theme simply require it in your `composer.json` file.
 
 ~~~
-"test/test": "dev-master"
+"require": {
+
+	"pitchanon/facebook-connect": "dev-master"
+
+}
 ~~~
 
 You'll then need to run `composer install` to download it and have the autoloader updated.
@@ -45,7 +49,7 @@ Usage.
 $application = array('appId' => 'xxxxx', 'secret' => 'xxxxx');
 $permissions = 'publish_stream';
 $url_app = 'http://laravel-test.local/';
-FacebookConnect::getUser($application,$permissions,$url_app); // Can get return User data facebook form getUser()
+FacebookConnect::getUser($application,$permissions,$url_app); // Can get return facebook User data form getUser()
 
 // post to wall facebook.
 $message = array(
