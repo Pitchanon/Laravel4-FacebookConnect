@@ -1,6 +1,6 @@
 ## Facebook Connect for Laravel 4
 
-Facebook Connect is a useful to create app facebokk and get testing request.
+Facebook Connect is a useful to create app facebook and get testing request.
 
 ### Installation
 
@@ -17,7 +17,7 @@ To get the lastest version of Theme simply require it in your `composer.json` fi
 }
 ~~~
 
-You'll then need to run `composer install` to download it and have the autoloader updated.
+You'll then need to run `composer install` or `composer update` to download it and have the autoloader updated.
 
 Once Theme is installed you need to register the service provider with the application. Open up `app/config/app.php` and find the `providers` key.
 
