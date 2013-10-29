@@ -1,0 +1,26 @@
+{
+    "name": "pitchanon/facebook-connect",
+    "description": "A vendor facebook connect package",
+    "keywords": ["laravel", "vendor", "facebook"],
+    "homepage": "https://github.com/popphoenix/test",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pitchanon D.",
+            "email": "Pitchanon.d@gmail.com",
+            "homepage": "https://github.com/popphoenix",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "illuminate/support": "4.0.x"
+    },
+    "autoload": {
+        "psr-0": {
+            "Pitchanon\\FacebookConnect": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
