@@ -37,7 +37,7 @@ Testing.
 
 ~~~php
 // Test Connect (for test only)
-$application = array('appId' => 'xxxxx', 'secret' => 'xxxxx');
+$application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
 FacebookConnect::test($application);
 
 ~~~
@@ -64,7 +64,7 @@ FacebookConnect::postToFacebook($application,$message,'feed');
 ~~~
 
 
->> http://laravel-test.local/ is my [Localhost](http://laravel-test.local/).
+>> note: laravel-test.local is my [Localhost](http://laravel-test.local/).
 
 ## Support or Contact
 
