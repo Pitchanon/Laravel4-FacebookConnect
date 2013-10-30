@@ -4,7 +4,7 @@
     "keywords": ["laravel", "vendor", "facebook"],
     "homepage": "https://github.com/popphoenix/Laravel4-FacebookConnect",
     "type": "library",
-    "license": "MIT",
+    "license": "GNU General Public License (GPL)",
     "authors": [
         {
             "name": "Pitchanon D.",
