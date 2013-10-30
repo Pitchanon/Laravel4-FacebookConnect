@@ -46,16 +46,16 @@ Usage.
 
 ~~~php
 // Response entries.
-$application = array('appId' => 'xxxxx', 'secret' => 'xxxxx');
+$application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
 $permissions = 'publish_stream';
 $url_app = 'http://laravel-test.local/';
 FacebookConnect::getUser($application,$permissions,$url_app); // Can get return facebook User data form getUser()
 
 // post to wall facebook.
 $message = array(
-      'link'    => 'http://app-test.local/',
+      'link'    => 'http://laravel-test.local/',
       'message' => 'test message',
-      'picture'   => 'https://app-test.local/test.gif',
+      'picture'   => 'http://laravel-test.local/test.gif',
       'name'    => 'test Title ',
       'description' => 'test description '
       );
@@ -64,7 +64,7 @@ FacebookConnect::postToFacebook($application,$message,'feed');
 ~~~
 
 
->> Test on [PlayDN](http://www.playdn.com/).
+>> http://laravel-test.local/ is my [Localhost](http://laravel-test.local/).
 
 ## Support or Contact
 
