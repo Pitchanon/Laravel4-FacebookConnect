@@ -5,7 +5,7 @@ Facebook Connect is a useful to create app facebook and get testing request.
 ### Installation
 
 - [API on Packagist](https://packagist.org/packages/pitchanon/facebook-connect)
-- [API on GitHub](https://github.com/popphoenix/Laravel4-FacebookConnect)
+- [API on GitHub](https://github.com/Pitchanon/Laravel4-FacebookConnect)
 
 To get the lastest version of Theme simply require it in your `composer.json` file.
 

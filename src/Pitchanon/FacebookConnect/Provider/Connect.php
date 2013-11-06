@@ -10,7 +10,9 @@ use Pitchanon\FacebookConnect\Provider\Facebookphpsdk\src\Facebook;
  * Test on: Laravel 4
  * Test on: Facebook PHP SDK (v.3.2.2)
  *
+ * @package FacebookConnect
  * @version 0.0.1
+ * @category facebook
  * @author PitchanonD. <Pitchanon.d@gmail.com>
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
