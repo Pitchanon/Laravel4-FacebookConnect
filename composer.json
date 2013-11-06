@@ -2,14 +2,14 @@
     "name": "pitchanon/facebook-connect",
     "description": "A vendor facebook connect package",
     "keywords": ["laravel", "vendor", "facebook"],
-    "homepage": "https://github.com/popphoenix/Laravel4-FacebookConnect",
+    "homepage": "https://github.com/Pitchanon/Laravel4-FacebookConnect",
     "type": "library",
     "license": "GNU General Public License (GPL)",
     "authors": [
         {
             "name": "Pitchanon D.",
             "email": "Pitchanon.d@gmail.com",
-            "homepage": "https://github.com/popphoenix",
+            "homepage": "https://github.com/Pitchanon",
             "role": "Developer"
         }
     ],
