@@ -246,7 +246,7 @@ class FacebookConnect {
             'description'   => $message['description']
             ));
 
-        return json_encode(array('postToFacebook' => $return_post)); // string(37) "{"id":"1330355140_10202431069601292"}"
+        return json_encode(array('postToFacebook' => $return_post)); // string(37) "{"id":"13303xxxxx_102024310696xxxxx"}"
     }
 
 }
