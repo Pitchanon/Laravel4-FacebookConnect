@@ -11,148 +11,62 @@ use Pitchanon\FacebookConnect\Provider\Facebookphpsdk\src\Facebook;
  * Test on: Facebook PHP SDK (v.3.2.2)
  *
  * @package FacebookConnect
- * @version 0.0.1
+ * @version 0.0.2
  * @category facebook
- * @author PitchanonD. <Pitchanon.d@gmail.com>
+ * @author Pitchanon D. <Pitchanon.d@gmail.com>
  * @license http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
  */
 class FacebookConnect {
 
-    private $facebook;
+    private static $facebook;
 
     /**
-     * Instantiate a new Controller instance.
+     * getInstance
+     *
+     * @author Pitchanon D. <Pitchanon.d@gmail.com>
+     *
+     * @method getFacebook
+     *
+     * @param array $application Example: array('appId' => YOUR_APP_ID, 'secret' => YOUR_APP_SECRET);
+     *
+     * @return object                   new Facebook($application)
      */
-    public function __construct() {
-        // The Facebook Platform is a set of APIs
-        // require 'facebook-php-sdk-master/src/facebook.php';
+    public static function getFacebook($application = array()) {
+        if (!isset(self::$facebook) || empty(self::$facebook)) {
+            self::$facebook = new Facebook($application);
+        }
+        return self::$facebook;
     }
 
     /**
-     * Get a web file (HTML, XHTML, XML, image, etc.) from a URL
+     * Authenticated
      *
-     * @param  string $url URL
+     * @author Pitchanon D. <Pitchanon.d@gmail.com>
      *
-     * @return string      Return an array/json containing the HTTP server response header fields and content.
+     * @method getUser
+     *
+     * @param  array  $permissions List permissions
+     * @param  string  $url_app     Canvas URL
+     *
+     * @return array               User data facebook
      */
-    private function curl_get_file_contents($url) {
-        // header('Content-type: application/json');
-        $ch = curl_init($url);
-        $options = array(
-            CURLOPT_RETURNTRANSFER => true, // return web page
-            CURLOPT_HEADER => false, // don't return headers
-            CURLOPT_FOLLOWLOCATION => true, // follow redirects
-            CURLOPT_ENCODING => "", // handle all encodings
-            CURLOPT_USERAGENT => "spider", // who am i
-            CURLOPT_AUTOREFERER => true, // set referer on redirect
-            CURLOPT_CONNECTTIMEOUT => 120, // timeout on connect
-            CURLOPT_TIMEOUT => 120, // timeout on response
-            CURLOPT_MAXREDIRS => 10, // stop after 10 redirects
-            CURLOPT_SSL_VERIFYPEER => false // Disabled SSL Cert checks
+    public static function getUser($permissions, $url_app) {
+        // Authenticated
+        // Get User ID
+        $user = self::getFacebook()->getUser();
+        $loginUrl = self::getFacebook()->getLoginUrl(array(
+            'redirect_uri' => $url_app,
+            'scope' => $permissions,
+            // 'canvas' => 1,
+            // 'fbconnect' => 0,
+            // 'next' => $start_page // page ที่จะไปเมื่อ log in เสร็จ
+            )
         );
 
-        curl_setopt_array($ch,$options);
-        $content = curl_exec($ch);
-        $err = curl_errno($ch);
-        $errmsg  = curl_error($ch);
-        $header  = curl_getinfo($ch);
-        curl_close($ch);
-
-        $header['errno'] = $err;
-        $header['errmsg'] = $errmsg;
-        $header['content'] = $content;
-
-        return json_encode(array('header' => $header));
-    }
-
-    /**
-     * Test Connect Facebook examples
-     *
-     * @param array $application Example: array('appId' => YOUR_APP_ID, 'secret' => YOUR_APP_SECRET);
-     *
-     * @return string              Message for test Success!
-     */
-    public static function test($application) {
-        // Create our Application instance (replace this with your appId and secret).
-        // $facebook = new Facebookphpsdk\src\Facebook($application);
-        $facebook = new Facebook($application);
-
-        // Get User ID
-        $user = $facebook->getUser();
-
         if ($user) {
             try {
                 // Proceed knowing you have a logged in user who's authenticated.
-                $user_profile = $facebook->api('/me');
-            } catch (FacebookApiException $e) {
-                error_log($e);
-                $user = null;
-            }
-        }
-
-        // Login or logout url will be needed depending on current user state.
-        if ($user) {
-            $logoutUrl = $facebook->getLogoutUrl();
-        } else {
-            $statusUrl = $facebook->getLoginStatusUrl();
-            $loginUrl = $facebook->getLoginUrl();
-        }
-
-        // This call will always work since we are fetching public data.
-        $pitchanon = $facebook->api('/popphoenix');
-
-        header( 'Content-type: text/html; charset=utf-8' );
-        echo $facebook->test();
-        echo '<br />';
-        if ($user) {
-            echo 'You<br />';
-            echo '<img src="https://graph.facebook.com/'.$user.'/picture"><br />';
-            echo '<a href="'.$logoutUrl.'">Logout</a><br />';
-            echo 'Your User Object (/me)';
-            echo var_dump($user_profile);
-            echo '<br />';
-        } else {
-            echo 'Check the login status using OAuth 2.0 handled by the PHP SDK:';
-            echo '<a href="'.$statusUrl.'">Check the login status</a><br />';
-            echo 'Login using OAuth 2.0 handled by the PHP SDK:';
-            echo '<a href="'.$loginUrl.'">Login with Facebook</a><br />';
-            echo 'You are not Connected.';
-            echo '<br />';
-        }
-        echo 'Public profile of Pitchanon: '.$pitchanon['name'].'<br />'.time();
-
-        return true;
-    }
-
-    /**
-     * Connect to facebook get User data, If not login facebook or not has user permissions is redirect to Login or App permissions
-     *
-     * @param array $application Example: array('appId' => YOUR_APP_ID, 'secret' => YOUR_APP_SECRET);
-     * @param string $permissions Example: publish_stream, user_likes, user_photos
-     * @param string $url_app URL of this app
-     *
-     * @return string              json user data
-     */
-    public function getUser($application,$permissions,$url_app) {
-        /*if(isset($_GET['code'])){
-            // https://graph.facebook.com/oauth/access_token?client_id=YOUR_APP_ID&redirect_uri=YOUR_URL&client_secret=YOUR_APP_SECRET&code=THE_CODE_FROM_ABOVE
-            $url = "https://graph.facebook.com/oauth/access_token?client_id=".$application['appId']."&redirect_uri=".urlencode($url_app)."&client_secret=".$application['secret']."&code=".$_GET['code']."";
-            $header = $this->curl_get_file_contents($url);
-        }*/
-
-        // Create our Application instance (replace this with your appId and secret).
-        // $facebook = new Facebookphpsdk\src\Facebook($application);
-        $this->facebook = new Facebook($application);
-
-        // Get User ID
-        $user = $this->facebook->getUser();
-        $loginUrl = $this->facebook->getLoginUrl(array('redirect_uri' => $url_app, 'scope' => $permissions));
-
-        if ($user) {
-            try {
-                // Proceed knowing you have a logged in user who's authenticated.
-                $user_profile = $this->facebook->api('/me');
-                $access_token = $this->facebook->getAccessToken(); // https://graph.facebook.com/me?access_token=$access_token
+                $user_profile = self::getFacebook()->api('/me');
             } catch (FacebookApiException $e) {
                 error_log($e);
                 $user = null;
@@ -165,80 +79,63 @@ class FacebookConnect {
         }
 
         // Check Permissions
-        $permissions_api = $this->facebook->api("/me/permissions");
+        $permissions_api = self::getFacebook()->api("/me/permissions");
 
-        if (isset($permissions_api['data']['0']['publish_stream'])) {
-
-            // Check verify facebook access token
-            // Attempt to query the graph:
-            $curl_access_token = $this->curl_get_file_contents('https://graph.facebook.com/me?access_token='. $access_token);
-            $object_curl_access_token = json_decode($curl_access_token);
-            $object_curl_content = json_decode($object_curl_access_token->header->content);
-
-            //Check for errors
-            if (isset($object_curl_content->error)) {
-                // check to see if this is an oAuth error:
-                if ($object_curl_content->error->type == "OAuthException") {
-                    // Retrieving a valid access token.
-                    $dialog_url= "https://www.facebook.com/dialog/oauth?client_id=" . $application['appId'] . "&redirect_uri=" . urlencode($url_app);
-                    echo '<script type="text/javascript">top.location.href="'.$dialog_url.'";</script>';
-                    exit();
-                } else {
-                    echo "other error has happened";
-                }
-
-            } else {
-
-                // remove code param in url
-                if (isset($_GET['code'])) {
-                    echo '<script type="text/javascript">window.location = "'.$url_app.'";</script>';
-                }
-
-                // success
-                return json_encode(array(
-                    'facebook' => array(
-                        'status' => array(
-                                'code' => 200,
-                                'message' => 'OK',
-                                'type' => 'string'
-                                ),
-                        'user_profile' => $user_profile,
-                        'access_token' => $access_token
-                        )
-                    )
-                );
-
-            }
-
-        } else {
+        if (empty($permissions_api['data']['0']['publish_stream'])) {
             echo '<script type="text/javascript">window.location = "'.$loginUrl.'";</script>';
             exit();
         }
 
+        // Get the current access token
+        $access_token = self::getFacebook()->getAccessToken();
+
+        // Success
+        $response = array(
+            'user_profile' => $user_profile,
+            'access_token' => $access_token
+            );
+        return $response;
+    }
+
+    /**
+     * Check user likes the page in Facebook
+     *
+     * @author Pitchanon D. <Pitchanon.d@gmail.com>
+     *
+     * @method getUserLikePage
+     *
+     * @param  integer          $page_id Facebook fan page id
+     * @param  integer          $user_id Facebook User id
+     *
+     * @return array                   User id form facebook if like fan page
+     */
+    public function getUserLikePage($page_id, $user_id) {
+        $response = self::getFacebook()->api(array(
+            "method"    => "fql.query",
+            "query"     => "SELECT uid FROM page_fan WHERE uid={$user_id} AND page_id={$page_id}"
+            )); //,type,page_id,profile_section 1169893316XXXXX
+        return $response;
     }
 
     /**
      * post links, feed to user facebook wall
      *
-     * @param array $application Example: array('appId' => YOUR_APP_ID, 'secret' => YOUR_APP_SECRET);
-     * @param  array $message     Example: $message = array('link' => '', 'message' => '','picture' => '', 'name' => '','description'   => '');
-     * @param  string $type        type of post (links,feed)
+     * @author Pitchanon D. <Pitchanon.d@gmail.com>
      *
-     * @return string              id of post
+     * @method postToFacebook
+     *
+     * @param  array         $message Example: $message = array('link' => '', 'message' => '','picture' => '', 'name' => '','description'   => '');
+     * @param  string         $type    Type of message (links,feed)
+     *
+     * @return string                  Id of message
      */
-    public function postToFacebook($application,$message,$type=""){
-        $this->facebook = new Facebook(array(
-            'appId' => $application['appId'],
-            'secret' => $application['secret'],
-            'cookie' => true,
-            'fileUpload' => false
-            ));
-
-        if (!$type) {
+    public function postToFacebook($message, $type = null){
+        if (is_null($type)) {
             $type = 'feed';
         }
+
         // links, feed
-        $return_post = $this->facebook->api('/me/'.$type, 'POST', array(
+        $response = self::getFacebook()->api('/me/' . $type, 'POST', array(
             'link'      => $message['link'],
             'message'    => $message['message'],
             'picture'       => $message['picture'],
@@ -246,7 +143,32 @@ class FacebookConnect {
             'description'   => $message['description']
             ));
 
-        return json_encode(array('postToFacebook' => $return_post)); // string(37) "{"id":"13303xxxxx_102024310696xxxxx"}"
+        return $response; // Array ( [id] => 1330355140_102030093014XXXXX )
+    }
+
+    /**
+     * This wrapper function exists in order to circumvent PHP’s strict obeying of HTTP error codes. In this case, Facebook returns error code 400 which PHP obeys and wipes out the response.
+     *
+     * @author Ankur Pansari
+     *
+     * @method curl_get_file_contents
+     *
+     * @param  string                 $url Uniform resource locator
+     *
+     * @return string                      Data
+     */
+    private function curl_get_file_contents($url) {
+        $c = curl_init();
+        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($c, CURLOPT_URL, $url);
+        $contents = curl_exec($c);
+        $err  = curl_getinfo($c,CURLINFO_HTTP_CODE);
+        curl_close($c);
+        if ($contents) {
+            return $contents;
+        } else {
+            return false;
+        }
     }
 
 }

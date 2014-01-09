@@ -20,6 +20,7 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 		$this->package('Pitchanon/FacebookConnect');
 
 		// Auto create app alias with boot method.
+		// Shortcut so developers don't need to add an Alias in app/config/app.php
 		$loader = \Illuminate\Foundation\AliasLoader::getInstance();
 		$loader->alias('FacebookConnect', 'Pitchanon\FacebookConnect\Facades\FacebookConnect');
 	}
@@ -33,14 +34,8 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 	{
 		// Register 'facebookconnect' instance container to our FacebookConnect object
 		$this->app['facebookconnect'] = $this->app->share(function($app) {
-			return new Provider\FacebookConnect; // Class Name
+			return new Provider\FacebookConnect;
 		});
-
-		// Shortcut so developers don't need to add an Alias in app/config/app.php
-		/*$this->app->booting(function() {
-			$loader = \Illuminate\Foundation\AliasLoader::getInstance();
-			$loader->alias('FacebookConnect', 'Pitchanon\FacebookConnect\Facades\FacebookConnect'); // Class Name
-		});*/
 	}
 
 	/**
@@ -50,7 +45,9 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 	 */
 	public function provides()
 	{
-		return array();
+		return array(
+			'facebookconnect'
+			);
 	}
 
 }
