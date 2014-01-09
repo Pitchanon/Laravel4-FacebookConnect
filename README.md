@@ -73,7 +73,7 @@ $user_id = $getUser['user_profile']['id']; // form FacebookConnect::getUser();
 
 $check_like_fan_page = FacebookConnect::getUserLikePage($page_id, $user_id);
 
-if (!empty($check_like_fan_page) && array_key_exists('uid', $check_like_fan_page[0]) && $check_like_fan_page[0]['uid'] = $getUser['user_profile']['id']) {
+if (!empty($check_like_fan_page) && array_key_exists('uid', $check_like_fan_page[0]) && $check_like_fan_page[0]['uid'] = $user_id) {
     echo 'LIKE';
 else {
     echo 'DONT LIKE';

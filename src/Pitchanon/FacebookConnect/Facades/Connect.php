@@ -10,10 +10,7 @@ class FacebookConnect extends Facade {
 	*
 	* @return string
 	*/
-	protected static function getFacadeAccessor() {
-		// return 'connect.facebookconnect';
-		return 'facebookconnect';
-	}
+	protected static function getFacadeAccessor() { return 'FacebookConnect'; }
 
 }
 ?>

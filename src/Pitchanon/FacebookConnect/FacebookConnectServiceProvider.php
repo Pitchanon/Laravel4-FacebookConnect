@@ -32,8 +32,8 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		// Register 'facebookconnect' instance container to our FacebookConnect object
-		$this->app['facebookconnect'] = $this->app->share(function($app) {
+		// Register 'FacebookConnect' instance container to our FacebookConnect object
+		$this->app['FacebookConnect'] = $this->app->share(function($app) {
 			return new Provider\FacebookConnect;
 		});
 	}
@@ -46,7 +46,7 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 	public function provides()
 	{
 		return array(
-			'facebookconnect'
+			'FacebookConnect'
 			);
 	}
 
