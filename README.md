@@ -31,16 +31,19 @@ Once Theme is installed you need to register the service provider with the appli
 
 ## Usage
 
-In Controller.
+Getting Started with the Facebook SDK for PHP.
 
-Usage.
+In Controller.
 
 ~~~php
 // Response entries.
 $application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
 $permissions = 'publish_stream';
 $url_app = 'http://laravel-test.local/';
-FacebookConnect::getFacebook($this->application);
+
+// getInstance
+FacebookConnect::getFacebook($application);
+
 $getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook User data
 
 ~~~
@@ -65,7 +68,7 @@ Check user likes the page in Facebook.
 
 ~~~php
 // Check user likes the page in Facebook.
-$page_id = FACEBOOK_PAGE_ID;
+$page_id = 'FACEBOOK_PAGE_ID';
 $user_id = $getUser['user_profile']['id']; // form FacebookConnect::getUser();
 
 $check_like_fan_page = FacebookConnect::getUserLikePage($page_id, $user_id);
