@@ -33,15 +33,6 @@ Once Theme is installed you need to register the service provider with the appli
 
 In Controller.
 
-Testing.
-
-~~~php
-// Test Connect (for test only)
-$application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
-FacebookConnect::test($application);
-
-~~~
-
 Usage.
 
 ~~~php
@@ -49,8 +40,14 @@ Usage.
 $application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
 $permissions = 'publish_stream';
 $url_app = 'http://laravel-test.local/';
-FacebookConnect::getUser($application,$permissions,$url_app); // Can get return facebook User data form getUser()
+FacebookConnect::getFacebook($this->application);
+$getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook User data
 
+~~~
+
+Post to wall.
+
+~~~php
 // post to wall facebook.
 $message = array(
       'link'    => 'http://laravel-test.local/',
@@ -59,9 +56,24 @@ $message = array(
       'name'    => 'test Title ',
       'description' => 'test description '
       );
-FacebookConnect::postToFacebook($application,$message,'feed');
+
+FacebookConnect::postToFacebook($message,'feed');
 
 ~~~
+
+Check user likes the page in Facebook.
+
+~~~php
+$check_like_fan_page = FacebookConnect::getUserLikePage({FACEBOOK_PAGE_ID}, {$getUser['user_profile']['id']});
+
+if (!empty($check_like_fan_page) && array_key_exists('uid', $check_like_fan_page[0]) && $check_like_fan_page[0]['uid'] = $getUser['user_profile']['id']) {
+    echo 'LIKE';
+else {
+    echo 'DONT LIKE';
+}
+
+~~~
+
 
 
 >> note: laravel-test.local is my [Localhost](http://laravel-test.local/).
