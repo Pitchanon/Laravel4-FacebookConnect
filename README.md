@@ -42,9 +42,9 @@ Once Theme is installed you need to register the service provider with the appli
 
 Getting Started with the Facebook SDK for PHP.
 
-### getUser
-
 In Controller.
+
+### getUser
 
 ~~~php
 // Response entries.
