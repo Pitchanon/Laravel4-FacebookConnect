@@ -87,6 +87,7 @@ class FacebookConnect {
         }
 
         // Get the current access token
+        self::getFacebook()->setExtendedAccessToken();
         $access_token = self::getFacebook()->getAccessToken();
 
         // Success

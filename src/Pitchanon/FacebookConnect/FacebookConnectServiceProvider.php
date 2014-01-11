@@ -17,8 +17,6 @@ class FacebookConnectServiceProvider extends ServiceProvider {
 	 * @return void
 	 */
 	public function boot() {
-		$this->package('Pitchanon/FacebookConnect');
-
 		// Auto create app alias with boot method.
 		// Shortcut so developers don't need to add an Alias in app/config/app.php
 		$loader = \Illuminate\Foundation\AliasLoader::getInstance();

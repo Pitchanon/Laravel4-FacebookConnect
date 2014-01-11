@@ -6,6 +6,7 @@ Facebook Connect is a useful to create app facebook and get testing request.
 
 - [API on Packagist](https://packagist.org/packages/pitchanon/facebook-connect)
 - [API on GitHub](https://github.com/Pitchanon/Laravel4-FacebookConnect)
+- [API on Laravel bundles](http://bundles.laravel.com/bundle/Laravel4-FacebookConnect)
 
 To get the lastest version of Theme simply require it in your `composer.json` file.
 
@@ -19,9 +20,17 @@ To get the lastest version of Theme simply require it in your `composer.json` fi
 
 You'll then need to run `composer install` or `composer update` to download it and have the autoloader updated.
 
-Once Theme is installed you need to register the service provider with the application. Open up `app/config/app.php` and find the `providers` key.
+or
+
+You can install this bundle by running the following CLI command:
 
 ~~~
+$ php artisan bundle:install Laravel4-FacebookConnect
+~~~
+
+Once Theme is installed you need to register the service provider with the application. Open up `app/config/app.php` and find the `providers` key.
+
+~~~php
 'providers' => array(
 
     'Pitchanon\FacebookConnect\FacebookConnectServiceProvider'
@@ -37,7 +46,10 @@ In Controller.
 
 ~~~php
 // Response entries.
-$application = array('appId' => 'YOUR_APP_ID', 'secret' => 'YOUR_APP_SECRET');
+$application = array(
+    'appId' => 'YOUR_APP_ID',
+    'secret' => 'YOUR_APP_SECRET'
+    );
 $permissions = 'publish_stream';
 $url_app = 'http://laravel-test.local/';
 
@@ -53,12 +65,12 @@ Post to wall.
 ~~~php
 // post to wall facebook.
 $message = array(
-      'link'    => 'http://laravel-test.local/',
-      'message' => 'test message',
-      'picture'   => 'http://laravel-test.local/test.gif',
-      'name'    => 'test Title ',
-      'description' => 'test description '
-      );
+    'link'    => 'http://laravel-test.local/',
+    'message' => 'test message',
+    'picture'   => 'http://laravel-test.local/test.gif',
+    'name'    => 'test Title',
+    'description' => 'test description'
+    );
 
 FacebookConnect::postToFacebook($message,'feed');
 
