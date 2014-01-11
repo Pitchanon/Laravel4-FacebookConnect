@@ -18,11 +18,11 @@ To get the lastest version of Theme simply require it in your `composer.json` fi
 }
 ~~~
 
-You'll then need to run `composer install` or `composer update` to download it and have the autoloader updated.
+You'll then need to run `composer install` or `composer update` to download it and have the autoloader updated
 
 or
 
-You can install this bundle by running the following CLI command:
+You can install this bundle by running the following CLI command.
 
 ~~~
 $ php artisan bundle:install Laravel4-FacebookConnect
@@ -42,6 +42,8 @@ Once Theme is installed you need to register the service provider with the appli
 
 Getting Started with the Facebook SDK for PHP.
 
+### getUser
+
 In Controller.
 
 ~~~php
@@ -60,7 +62,7 @@ $getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook 
 
 ~~~
 
-Post to wall.
+### Post to wall.
 
 ~~~php
 // post to wall facebook.
@@ -76,7 +78,7 @@ FacebookConnect::postToFacebook($message,'feed');
 
 ~~~
 
-Check user likes the page in Facebook.
+### Check user likes the page in Facebook.
 
 ~~~php
 // Check user likes the page in Facebook.
