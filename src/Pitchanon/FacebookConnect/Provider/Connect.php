@@ -74,7 +74,7 @@ class FacebookConnect {
         }
 
         if (!$user) {
-            echo '<script type="text/javascript">window.location = "'.$loginUrl.'";</script>';
+            echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
             exit();
         }
 
@@ -82,7 +82,7 @@ class FacebookConnect {
         $permissions_api = self::getFacebook()->api("/me/permissions");
 
         if (empty($permissions_api['data']['0']['publish_stream'])) {
-            echo '<script type="text/javascript">window.location = "'.$loginUrl.'";</script>';
+            echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
             exit();
         }
 
