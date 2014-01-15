@@ -44,10 +44,12 @@ Getting Started with the Facebook SDK for PHP.
 
 In Controller.
 
-### getUser
+### Getting Started
+
+Use a single object of a class throughout the lifetime of an application.
 
 ~~~php
-// Response entries.
+// Use a single object of a class throughout the lifetime of an application.
 $application = array(
     'appId' => 'YOUR_APP_ID',
     'secret' => 'YOUR_APP_SECRET'
@@ -58,7 +60,15 @@ $url_app = 'http://laravel-test.local/';
 // getInstance
 FacebookConnect::getFacebook($application);
 
+~~~
+
+### getUser
+
+~~~php
+
 $getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook User data
+
+var_dump($getUser);
 
 ~~~
 
