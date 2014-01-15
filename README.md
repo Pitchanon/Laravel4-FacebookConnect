@@ -13,7 +13,7 @@ To get the lastest version of Theme simply require it in your `composer.json` fi
 ~~~
 "require": {
 
-	"pitchanon/facebook-connect": "dev-master"
+    "pitchanon/facebook-connect": "dev-master"
 
 }
 ~~~
@@ -62,7 +62,7 @@ $getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook 
 
 ~~~
 
-### Post to wall.
+### Post to wall
 
 ~~~php
 // post to wall facebook.
@@ -78,7 +78,7 @@ FacebookConnect::postToFacebook($message,'feed');
 
 ~~~
 
-### Check user likes the page in Facebook.
+### Check user likes the page in Facebook
 
 ~~~php
 // Check user likes the page in Facebook.
