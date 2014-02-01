@@ -106,9 +106,11 @@ else {
 
 ~~~
 
+## Demo
 
+[Facebook application](https://www.playdn.com/ssl/laravel-main/public/index.php/test/).
 
->> Demo [Facebook application](https://www.playdn.com/ssl/laravel-main/public/index.php/test/).
+>> NOTE: Permission demo publish_stream, read_stream, manage_pages, email, user_likes, user_photos.
 
 ## Support or Contact
 
