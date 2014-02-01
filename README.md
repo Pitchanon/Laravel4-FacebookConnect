@@ -81,10 +81,11 @@ $message = array(
     'message' => 'test message',
     'picture'   => 'http://laravel-test.local/test.gif',
     'name'    => 'test Title',
-    'description' => 'test description'
+    'description' => 'test description',
+    'access_token' => $getUser['access_token'] // form FacebookConnect::getUser();
     );
 
-FacebookConnect::postToFacebook($message,'feed');
+FacebookConnect::postToFacebook($message, 'feed'); // return feed id 1330355140_102030093014XXXXX
 
 ~~~
 
@@ -107,7 +108,7 @@ else {
 
 
 
->> note: laravel-test.local is my [Localhost](http://laravel-test.local/).
+>> Demo [Facebook application](https://www.playdn.com/ssl/laravel-main/public/index.php/test/).
 
 ## Support or Contact
 
