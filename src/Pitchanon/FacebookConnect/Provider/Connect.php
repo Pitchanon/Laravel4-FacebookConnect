@@ -141,16 +141,16 @@ class FacebookConnect
         // check if the permissions we need have been allowed by the user
         // if not then redirect them again to facebook's permissions page
         foreach ($permissions_array as $perm) {
-			$perm_listed = false;
+			$perm_unlisted = false;
 			foreach($permissions_list['data'][0] as $fb_perm)
 			{
 				if($fb_perm['permission'] == $perm && $fb_perm['status'] == 'granted')
 				{
-					$perm_listed = true;
+					$perm_unlisted = true;
 					break;
 				}
 			}
-			if($perm_listed) {
+			if($perm_unlisted) {
 				echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
 				exit();
 			}
