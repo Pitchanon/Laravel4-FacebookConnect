@@ -109,7 +109,7 @@ class FacebookConnect
         }
 
         // If not, let's redirect to the ALLOW page so we can get access
-        if (!$user) {
+        if (empty($user)) {
             echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
             exit();
         }
@@ -141,10 +141,19 @@ class FacebookConnect
         // check if the permissions we need have been allowed by the user
         // if not then redirect them again to facebook's permissions page
         foreach ($permissions_array as $perm) {
-            if (!isset($permissions_list['data'][0][$perm]) || $permissions_list['data'][0][$perm] != 1) {
-                echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
-                exit();
-            }
+			$perm_unlisted = false;
+			foreach($permissions_list['data'][0] as $fb_perm)
+			{
+				if($fb_perm['permission'] == $perm && $fb_perm['status'] == 'granted')
+				{
+					$perm_unlisted = true;
+					break;
+				}
+			}
+			if($perm_unlisted) {
+				echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
+				exit();
+			}
         }
 
         // Set the current access token to be a long-lived token.
