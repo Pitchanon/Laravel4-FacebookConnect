@@ -1,260 +1,191 @@
 <?php
-/**
- * FacebookConnect.
- *
- * PHP version 5
- *
- * @category Facebook
- * @package  FacebookConnect
- * @author   PitchanonD. <Pitchanon.d@gmail.com>
- * @license  http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
- * @link     https://github.com/Pitchanon/Laravel4-FacebookConnect github
- */
+
 namespace Pitchanon\FacebookConnect\Provider;
 
-use Pitchanon\FacebookConnect\Provider\Facebookphpsdk\src\Facebook;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
+use Pitchanon\FacebookConnect\Exceptions\FacebookConnectException;
 
-// if (class_exists('FacebookConnect', true) === false) {
-//     $error = 'Class FacebookConnect not found';
-//     throw new FacebookConnect_Exception($error);
-// }
-
-/**
- * FacebookConnect.
- *
- * Test on: Apache/2.4.4 (Win32) OpenSSL/1.0.1e PHP/5.5.1
- * Test on: Laravel Framework version 4.0.9
- * Test on: Facebook PHP SDK (v.3.2.2)
- *
- * @category Facebook
- * @package  FacebookConnect
- * @author   PitchanonD. <Pitchanon.d@gmail.com>
- * @license  http://opensource.org/licenses/gpl-license.php GNU General Public License (GPL)
- * @version  0.0.2
- * @link     https://github.com/Pitchanon/Laravel4-FacebookConnect github
- */
 class FacebookConnect
 {
+    protected const OAUTH_BASE = 'https://www.facebook.com';
+    protected const GRAPH_BASE = 'https://graph.facebook.com';
 
-    private static $__facebook;
+    protected string $appId;
+    protected string $appSecret;
+    protected string $graphVersion;
+    protected ?string $defaultRedirectUri;
+    protected array $defaultScopes;
+    protected Client $http;
 
-    /**
-     * getInstance.
-     *
-     * @param array $application Example: array('appId' => YOUR_APP_ID, 'secret' => YOUR_APP_SECRET);
-     *
-     * @return object              new Facebook($application)
-     *
-     * @author Pitchanon D. <Pitchanon.d@gmail.com>
-     */
-    public static function getFacebook($application = array())
+    public function __construct(array $config = [], ?Client $http = null)
     {
-        if (!isset(self::$__facebook) || empty(self::$__facebook)) {
-            self::$__facebook = new Facebook($application);
-        }
-        return self::$__facebook;
+        $this->appId              = (string) ($config['app_id'] ?? '');
+        $this->appSecret          = (string) ($config['app_secret'] ?? '');
+        $this->graphVersion       = (string) ($config['graph_version'] ?? 'v19.0');
+        $this->defaultRedirectUri = $config['redirect_uri'] ?? null;
+        $this->defaultScopes      = (array) ($config['default_scopes'] ?? ['email', 'public_profile']);
+
+        $this->http = $http ?? new Client([
+            'timeout' => (int) ($config['http_timeout'] ?? 15),
+        ]);
     }
 
-    /**
-     * Authenticated.
-     *
-     * @param array  $permissions List permissions
-     * @param string $url_app     Canvas URL
-     *
-     * @return array               User data facebook
-     *
-     * @author Pitchanon D. <Pitchanon.d@gmail.com>
-     */
-    public static function getUser($permissions, $url_app)
+    public function getLoginUrl(?string $redirectUri = null, array $scopes = [], ?string $state = null): string
     {
-        $permissions_array = array();
+        $this->requireAppConfig();
 
-        // for check permissions list
-        $permissions_array = array_map('trim', explode(',', $permissions));
+        $redirectUri = $redirectUri ?? $this->defaultRedirectUri;
+        if (empty($redirectUri)) {
+            throw new FacebookConnectException('A redirect URI is required to build the login URL.');
+        }
 
-        // Authenticated
-        // Get the FB UID of the currently logged in user
-        $user = self::getFacebook()->getUser();
+        $params = [
+            'client_id'     => $this->appId,
+            'redirect_uri'  => $redirectUri,
+            'scope'         => implode(',', $scopes ?: $this->defaultScopes),
+            'response_type' => 'code',
+        ];
 
-        /**
-         * Create a login URL using the Facebook library's getLoginUrl() method.
-         * If not, let's redirect to the ALLOW page so we can get access.
-         *
-         * @var array
-         *
-         * redirect_uri – this is the page Facebook redirects to after the user has gone through the Facebook permissions page.
-         * scope – this is a comma-delimited list of permissions the application needs.
-         * fbconnect – this should be 1 to tell Facebook that the application will be using Facebook to authenticate the user.
-         */
-        $loginUrl = self::getFacebook()->getLoginUrl(
-            array(
-                'redirect_uri' => $url_app,
-                'scope' => $permissions,
-                // 'canvas' => 1,
-                'fbconnect' => 1,
-                // 'display'   =>  "page",
-                // 'next' => $start_page // page ที่จะไปเมื่อ log in เสร็จ
-                )
-        );
+        if ($state !== null) {
+            $params['state'] = $state;
+        }
 
-        // if the user has already allowed the application, you'll be able to get his/her FB UID
-        if ($user) {
-            try {
-                // Proceed knowing you have a logged in user who's authenticated.
-                $user_profile = self::getFacebook()->api('/me');
-            } catch (FacebookApiException $e) {
-                error_log($e);
-                $user = null;
+        return self::OAUTH_BASE . '/' . $this->graphVersion . '/dialog/oauth?' . http_build_query($params);
+    }
+
+    public function getAccessTokenFromCode(string $code, ?string $redirectUri = null): array
+    {
+        $this->requireAppConfig();
+
+        $redirectUri = $redirectUri ?? $this->defaultRedirectUri;
+        if (empty($redirectUri)) {
+            throw new FacebookConnectException('A redirect URI is required to exchange the code.');
+        }
+
+        return $this->get('/oauth/access_token', [
+            'client_id'     => $this->appId,
+            'client_secret' => $this->appSecret,
+            'redirect_uri'  => $redirectUri,
+            'code'          => $code,
+        ]);
+    }
+
+    public function getLongLivedToken(string $shortLivedToken): array
+    {
+        $this->requireAppConfig();
+
+        return $this->get('/oauth/access_token', [
+            'grant_type'        => 'fb_exchange_token',
+            'client_id'         => $this->appId,
+            'client_secret'     => $this->appSecret,
+            'fb_exchange_token' => $shortLivedToken,
+        ]);
+    }
+
+    public function getUser(string $accessToken, array $fields = ['id', 'name', 'email']): array
+    {
+        return $this->get('/me', [
+            'fields'       => implode(',', $fields),
+            'access_token' => $accessToken,
+        ]);
+    }
+
+    public function getUserPermissions(string $accessToken): array
+    {
+        return $this->get('/me/permissions', ['access_token' => $accessToken]);
+    }
+
+    public function hasGrantedPermissions(string $accessToken, array $required): bool
+    {
+        $response = $this->getUserPermissions($accessToken);
+        $granted  = [];
+
+        foreach ($response['data'] ?? [] as $perm) {
+            if (($perm['status'] ?? '') === 'granted' && isset($perm['permission'])) {
+                $granted[] = $perm['permission'];
             }
         }
 
-        // If not, let's redirect to the ALLOW page so we can get access
-        if (empty($user)) {
-            echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
-            exit();
-        }
-
-        // get the user's access token
-        $access_token = self::getFacebook()->getAccessToken();
-
-        /**
-         * Facebook Permissions
-         *
-         * publish_stream – allows the application to publish updates to Facebook on the user’s behalf.
-         * read_stream – allows the application to read from the user’s News Feed.
-         * offline_access – converts the access_token to one that doesn’t expire, thus letting the application make API calls anytime. Without this, the application’s access_token will expire after a few minutes, which isn’t ideal in this case.
-         * manage_pages – lets the application access the user’s Facebook Pages. Since the application we’re building deals with Facebook Pages, we’ll need this as well.
-         */
-        $permissions_list = self::getFacebook()->api(
-            "/me/permissions",
-            'GET',
-            array(
-                'access_token' => $access_token
-                )
-        );
-
-        // if (empty($permissions_list['data']['0']['publish_stream'])) {
-        //     echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
-        //     exit();
-        // }
-
-        // check if the permissions we need have been allowed by the user
-        // if not then redirect them again to facebook's permissions page
-        foreach ($permissions_array as $perm) {
-            $perm_unlisted = false;
-            foreach($permissions_list['data'][0] as $fb_perm)
-            {
-                if (is_array($fb_perm) && $fb_perm['permission'] == $perm && $fb_perm['status'] == 'granted') {
-                    $perm_unlisted = true;
-                    break;
-                }
-            }
-            if($perm_unlisted) {
-                echo '<script type="text/javascript">top.location.href = "'.$loginUrl.'";</script>';
-                exit();
+        foreach ($required as $perm) {
+            if (!in_array($perm, $granted, true)) {
+                return false;
             }
         }
 
-        // Set the current access token to be a long-lived token.
-        self::getFacebook()->setExtendedAccessToken();
+        return true;
+    }
 
-        // get the news feed of the active page using the page's access token
-        $user_feed = self::getFacebook()->api(
-            '/me/feed',
-            array(
-                'access_token' => $access_token
-                )
-        );
+    public function getUserAccounts(string $accessToken): array
+    {
+        return $this->get('/me/accounts', ['access_token' => $accessToken]);
+    }
 
-        // if the user has allowed all the permissions we need,
-        // get the information about the pages that he or she managers
-        $user_accounts = self::getFacebook()->api(
-            '/me/accounts',
-            array(
-                'access_token' => $access_token
-                )
-        );
+    public function getUserFeed(string $accessToken): array
+    {
+        return $this->get('/me/feed', ['access_token' => $accessToken]);
+    }
 
-        // Success
-        $response = array(
-            'user_profile' => $user_profile,
-            'user_feed' => $user_feed,
-            'user_accounts' => $user_accounts,
-            'access_token' => $access_token
+    public function postToFeed(array $message, string $accessToken, string $target = 'me'): array
+    {
+        return $this->post('/' . ltrim($target, '/') . '/feed', $message + [
+            'access_token' => $accessToken,
+        ]);
+    }
+
+    public function userLikesPage(string $userId, string $pageId, string $accessToken): bool
+    {
+        $response = $this->get('/' . $userId . '/likes/' . $pageId, [
+            'access_token' => $accessToken,
+        ]);
+
+        return !empty($response['data']);
+    }
+
+    public function get(string $endpoint, array $params = []): array
+    {
+        return $this->request('GET', $endpoint, ['query' => $params]);
+    }
+
+    public function post(string $endpoint, array $params = []): array
+    {
+        return $this->request('POST', $endpoint, ['form_params' => $params]);
+    }
+
+    protected function request(string $method, string $endpoint, array $options = []): array
+    {
+        $url = self::GRAPH_BASE . '/' . $this->graphVersion . '/' . ltrim($endpoint, '/');
+
+        try {
+            $response = $this->http->request($method, $url, $options + ['http_errors' => false]);
+        } catch (GuzzleException $e) {
+            throw new FacebookConnectException('HTTP request to Graph API failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        $body    = (string) $response->getBody();
+        $decoded = json_decode($body, true);
+
+        if (!is_array($decoded)) {
+            throw new FacebookConnectException(
+                'Unexpected Graph API response (status ' . $response->getStatusCode() . '): ' . $body
             );
-        return $response;
-    }
-
-    /**
-     * Check user likes the page in Facebook.
-     *
-     * @param integer $page_id Facebook fan page id
-     * @param integer $user_id Facebook User id
-     *
-     * @return [type]          [description]
-     *
-     * @author Pitchanon D. <Pitchanon.d@gmail.com>
-     */
-    public function getUserLikePage($page_id, $user_id)
-    {
-        $response = self::getFacebook()->api(
-            array(
-                "method"    => "fql.query",
-                "query"     => "SELECT uid FROM page_fan WHERE uid={$user_id} AND page_id={$page_id}"
-                )
-        ); //,type,page_id,profile_section 1169893316XXXXX
-        return $response;
-    }
-
-    /**
-     * post links, feed to user facebook wall.
-     *
-     * @param array  $message Example: $message = array('link' => '', 'message' => '','picture' => '', 'name' => '','description'   => '', 'access_token' => '');
-     * @param string $type    Type of message (links,feed)
-     *
-     * @return string                  Id of message
-     *
-     * @author Pitchanon D. <Pitchanon.d@gmail.com>
-     */
-    public function postToFacebook(array $message, $type = null)
-    {
-        if (is_null($type)) {
-            $type = 'feed';
         }
 
-        // links, feed
-        $response = self::getFacebook()->api(
-            '/me/' . $type,
-            'POST',
-            $message
-        );
+        if (isset($decoded['error'])) {
+            $message = $decoded['error']['message'] ?? 'Unknown Graph API error';
+            $code    = (int) ($decoded['error']['code'] ?? 0);
+            throw new FacebookConnectException($message, $code);
+        }
 
-        return $response; // return feed id Array ( [id] => 1330355140_102030093014XXXXX )
+        return $decoded;
     }
 
-    /**
-     * This wrapper function exists in order to circumvent PHP’s strict obeying of HTTP error codes. In this case, Facebook returns error code 400 which PHP obeys and wipes out the response.
-     *
-     * @param string $url Uniform resource locator
-     *
-     * @return string                      Data
-     *
-     * @author Ankur Pansari
-     */
-    private function _curlGetFileContents($url)
+    protected function requireAppConfig(): void
     {
-        $c = curl_init();
-        curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($c, CURLOPT_URL, $url);
-        $contents = curl_exec($c);
-        $err  = curl_getinfo($c, CURLINFO_HTTP_CODE);
-        curl_close($c);
-        if ($contents) {
-            return $contents;
-        } else {
-            return false;
+        if ($this->appId === '' || $this->appSecret === '') {
+            throw new FacebookConnectException(
+                'Facebook app_id and app_secret must be configured before using this method.'
+            );
         }
     }
-
 }
-?>

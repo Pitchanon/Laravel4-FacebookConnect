@@ -1,51 +1,32 @@
-<?php namespace Pitchanon\FacebookConnect;
+<?php
+
+namespace Pitchanon\FacebookConnect;
 
 use Illuminate\Support\ServiceProvider;
+use Pitchanon\FacebookConnect\Provider\FacebookConnect;
 
-class FacebookConnectServiceProvider extends ServiceProvider {
+class FacebookConnectServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../../../config/facebook-connect.php', 'facebook-connect');
 
-	/**
-	 * Indicates if loading of the provider is deferred.
-	 *
-	 * @var bool
-	 */
-	protected $defer = false;
+        $this->app->singleton(FacebookConnect::class, function ($app) {
+            return new FacebookConnect($app['config']->get('facebook-connect'));
+        });
 
-	/**
-	 * Boot the service provider.
-	 *
-	 * @return void
-	 */
-	public function boot() {
-		// Auto create app alias with boot method.
-		// Shortcut so developers don't need to add an Alias in app/config/app.php
-		$loader = \Illuminate\Foundation\AliasLoader::getInstance();
-		$loader->alias('FacebookConnect', 'Pitchanon\FacebookConnect\Facades\FacebookConnect');
-	}
+        $this->app->alias(FacebookConnect::class, 'facebook-connect');
+    }
 
-	/**
-	 * Register the service provider.
-	 *
-	 * @return void
-	 */
-	public function register()
-	{
-		// Register 'FacebookConnect' instance container to our FacebookConnect object
-		$this->app['FacebookConnect'] = $this->app->share(function($app) {
-			return new Provider\FacebookConnect;
-		});
-	}
+    public function boot(): void
+    {
+        $this->publishes([
+            __DIR__ . '/../../../config/facebook-connect.php' => $this->app->configPath('facebook-connect.php'),
+        ], 'facebook-connect-config');
+    }
 
-	/**
-	 * Get the services provided by the provider.
-	 *
-	 * @return array
-	 */
-	public function provides()
-	{
-		return array(
-			'FacebookConnect'
-			);
-	}
-
+    public function provides(): array
+    {
+        return [FacebookConnect::class, 'facebook-connect'];
+    }
 }

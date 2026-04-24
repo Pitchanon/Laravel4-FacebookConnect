@@ -1,10 +1,10 @@
 {
     "name": "pitchanon/facebook-connect",
-    "description": "A vendor facebook connect package",
-    "keywords": ["laravel", "vendor", "facebook"],
+    "description": "A Laravel package for connecting to the Meta (Facebook) Graph API.",
+    "keywords": ["laravel", "meta", "facebook", "graph-api", "oauth"],
     "homepage": "https://github.com/Pitchanon/Laravel4-FacebookConnect",
     "type": "library",
-    "license": "GNU General Public License (GPL)",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "Pitchanon D.",
@@ -14,13 +14,34 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
-        "illuminate/support": "4.x"
+        "php": "^8.2",
+        "illuminate/support": "^11.0 || ^12.0",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "orchestra/testbench": "^9.0 || ^10.0"
     },
     "autoload": {
-        "psr-0": {
-            "Pitchanon\\FacebookConnect": "src/"
+        "psr-4": {
+            "Pitchanon\\FacebookConnect\\": "src/Pitchanon/FacebookConnect/"
         }
     },
-    "minimum-stability": "dev"
+    "autoload-dev": {
+        "psr-4": {
+            "Pitchanon\\FacebookConnect\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Pitchanon\\FacebookConnect\\FacebookConnectServiceProvider"
+            ],
+            "aliases": {
+                "FacebookConnect": "Pitchanon\\FacebookConnect\\Facades\\FacebookConnect"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

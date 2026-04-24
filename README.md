@@ -1,119 +1,125 @@
-## Facebook Connect for Laravel 4
+## Facebook Connect for Laravel
 
-Facebook Connect is a useful to create app facebook and get testing request.
+A small Laravel package that wraps the Meta (Facebook) Graph API for the common
+OAuth login flow, profile lookup, page posting, and "does this user like a page"
+checks. Works with Laravel 11 / 12 and PHP 8.2+.
+
+The package talks to Graph API **v19.0** by default over plain HTTP (Guzzle), so
+it does not depend on the archived `facebook/graph-sdk` package.
 
 ### Installation
 
-- [API on Packagist](https://packagist.org/packages/pitchanon/facebook-connect)
-- [API on GitHub](https://github.com/Pitchanon/Laravel4-FacebookConnect)
-- [API on Laravel bundles](http://bundles.laravel.com/bundle/Laravel4-FacebookConnect)
+```bash
+composer require pitchanon/facebook-connect
+```
 
-To get the lastest version of Theme simply require it in your `composer.json` file.
+The service provider and `FacebookConnect` facade are auto-discovered.
 
-~~~
-"require": {
+Publish the config file:
 
-    "pitchanon/facebook-connect": "dev-master"
+```bash
+php artisan vendor:publish --tag=facebook-connect-config
+```
 
+Then set your Meta app credentials in `.env`:
+
+```env
+FACEBOOK_APP_ID=your-app-id
+FACEBOOK_APP_SECRET=your-app-secret
+FACEBOOK_REDIRECT_URI=https://your-app.test/auth/facebook/callback
+FACEBOOK_GRAPH_VERSION=v19.0
+```
+
+### Usage
+
+#### 1. Redirect the user to Facebook
+
+```php
+use FacebookConnect;
+
+Route::get('/auth/facebook', function () {
+    $state = bin2hex(random_bytes(16));
+    session(['fb_oauth_state' => $state]);
+
+    return redirect(FacebookConnect::getLoginUrl(
+        redirectUri: null, // falls back to config
+        scopes: ['email', 'public_profile'],
+        state: $state,
+    ));
+});
+```
+
+#### 2. Handle the callback
+
+```php
+Route::get('/auth/facebook/callback', function (\Illuminate\Http\Request $request) {
+    abort_unless(hash_equals(session('fb_oauth_state', ''), (string) $request->query('state')), 419);
+
+    $token = FacebookConnect::getAccessTokenFromCode($request->query('code'));
+    $longLived = FacebookConnect::getLongLivedToken($token['access_token']);
+
+    $profile = FacebookConnect::getUser($longLived['access_token'], ['id', 'name', 'email']);
+
+    // persist $profile + $longLived['access_token'] however you like
+    return $profile;
+});
+```
+
+#### 3. Post to a user or page feed
+
+```php
+FacebookConnect::postToFeed([
+    'message' => 'Hello from Laravel!',
+    'link'    => 'https://example.com',
+], $accessToken, target: 'me');
+```
+
+For page posts, pass the page ID as `target` and use a page access token
+(available via `FacebookConnect::getUserAccounts($userAccessToken)`).
+
+#### 4. Check if a user likes a page
+
+```php
+$likes = FacebookConnect::userLikesPage($userId, $pageId, $accessToken);
+```
+
+#### 5. Verify granted permissions
+
+```php
+if (!FacebookConnect::hasGrantedPermissions($accessToken, ['email'])) {
+    return redirect(FacebookConnect::getLoginUrl());
 }
-~~~
+```
 
-You'll then need to run `composer install` or `composer update` to download it and have the autoloader updated
+#### 6. Arbitrary Graph calls
 
-or
+```php
+FacebookConnect::get('/me/photos', ['access_token' => $accessToken, 'limit' => 5]);
+FacebookConnect::post('/me/feed', ['message' => 'Hi', 'access_token' => $accessToken]);
+```
 
-You can install this bundle by running the following CLI command.
+### Errors
 
-~~~
-$ php artisan bundle:install Laravel4-FacebookConnect
-~~~
+All Graph API errors are thrown as
+`Pitchanon\FacebookConnect\Exceptions\FacebookConnectException` with the message
+and code returned by Meta.
 
-Once Theme is installed you need to register the service provider with the application. Open up `app/config/app.php` and find the `providers` key.
+### Migration notes (from the old Laravel 4 version)
 
-~~~php
-'providers' => array(
+- The bundled Facebook PHP SDK v3.2.2 has been removed &mdash; it has been
+  unmaintained since 2018 and relied on deprecated endpoints (`fql.query`,
+  `setExtendedAccessToken`, cookie-based sessions).
+- `FacebookConnect::getUser($permissions, $url_app)` no longer exists as a
+  one-shot "redirect or return profile" method. Use `getLoginUrl()` +
+  `getAccessTokenFromCode()` + `getUser($accessToken)` instead &mdash; this is
+  testable and does not `echo`/`exit` from inside the class.
+- `offline_access` and `publish_stream` have been removed by Meta years ago.
+  Use long-lived tokens (`getLongLivedToken()`) and the current publishing
+  permissions (e.g. `pages_manage_posts` for page posting, subject to app
+  review).
+- The check-fan call no longer uses FQL (deprecated since 2016); it uses the
+  `/{user-id}/likes/{page-id}` edge instead.
 
-    'Pitchanon\FacebookConnect\FacebookConnectServiceProvider'
+### License
 
-)
-~~~
-
-## Usage
-
-Getting Started with the Facebook SDK for PHP.
-
-In Controller.
-
-### Getting Started
-
-Use a single object of a class throughout the lifetime of an application.
-
-~~~php
-// Use a single object of a class throughout the lifetime of an application.
-$application = array(
-    'appId' => 'YOUR_APP_ID',
-    'secret' => 'YOUR_APP_SECRET'
-    );
-$permissions = 'publish_stream';
-$url_app = 'http://laravel-test.local/';
-
-// getInstance
-FacebookConnect::getFacebook($application);
-
-~~~
-
-### getUser
-
-~~~php
-
-$getUser = FacebookConnect::getUser($permissions, $url_app); // Return facebook User data
-
-var_dump($getUser);
-
-~~~
-
-### Post to wall
-
-~~~php
-// post to wall facebook.
-$message = array(
-    'link'    => 'http://laravel-test.local/',
-    'message' => 'test message',
-    'picture'   => 'http://laravel-test.local/test.gif',
-    'name'    => 'test Title',
-    'description' => 'test description',
-    'access_token' => $getUser['access_token'] // form FacebookConnect::getUser();
-    );
-
-FacebookConnect::postToFacebook($message, 'feed'); // return feed id 1330355140_102030093014XXXXX
-
-~~~
-
-### Check user likes the page in Facebook
-
-~~~php
-// Check user likes the page in Facebook.
-$page_id = 'FACEBOOK_PAGE_ID';
-$user_id = $getUser['user_profile']['id']; // form FacebookConnect::getUser();
-
-$check_like_fan_page = FacebookConnect::getUserLikePage($page_id, $user_id);
-
-if (!empty($check_like_fan_page) && array_key_exists('uid', $check_like_fan_page[0]) && $check_like_fan_page[0]['uid'] == $user_id) {
-    echo 'LIKE';
-else {
-    echo 'DONT LIKE';
-}
-
-~~~
-
-## Demo
-
-[Facebook application](https://www.playdn.com/ssl/laravel-main/public/index.php/test/).
-
->> NOTE: Permission demo publish_stream, read_stream, manage_pages, email, user_likes, user_photos.
-
-## Support or Contact
-
-If you have some problem, Contact Pitchanon.d@gmail.com
-
-<a href='http://www.playdn.com/'>http://www.playdn.com/</a>
+GPL-3.0-or-later. See `LICENSE`.
