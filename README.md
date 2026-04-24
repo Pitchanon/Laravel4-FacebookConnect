@@ -7,10 +7,28 @@ checks. Works with Laravel 11 / 12 and PHP 8.2+.
 The package talks to Graph API **v19.0** by default over plain HTTP (Guzzle), so
 it does not depend on the archived `facebook/graph-sdk` package.
 
+### Version compatibility
+
+| Package version | Laravel          | PHP     | Facebook SDK                  | Status       |
+| --------------- | ---------------- | ------- | ----------------------------- | ------------ |
+| `^2.0`          | 11.x, 12.x       | ^8.2    | Graph API v19 (Guzzle client) | Current      |
+| `^1.0`          | 4.x, 5.x         | >= 5.3  | Bundled Facebook PHP SDK 3.x  | Maintenance  |
+
+The legacy 1.x line is kept on the `1.x` branch for existing Laravel 4/5 users.
+Critical fixes may still be backported, but new features only land on `2.x`.
+
 ### Installation
 
+Latest (Laravel 11/12):
+
 ```bash
-composer require pitchanon/facebook-connect
+composer require pitchanon/facebook-connect:^2.0
+```
+
+Legacy (Laravel 4/5):
+
+```bash
+composer require pitchanon/facebook-connect:^1.0
 ```
 
 The service provider and `FacebookConnect` facade are auto-discovered.
